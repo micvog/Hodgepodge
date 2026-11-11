@@ -54,6 +54,8 @@ public class ChunkGenScheduler {
     private final Long2IntMap entryTickMap = new Long2IntOpenHashMap();
     private final LongList populationQueue = new LongArrayList();
     private int populationDepth = 0;
+    private static final long NOT_POPULATING = Long.MIN_VALUE;
+    private long populatingChunk = NOT_POPULATING;
     private int terrainCount = 0;
     private final ChunkGenBudget budget = new ChunkGenBudget();
     private final ChunkGenStats stats;
@@ -152,6 +154,22 @@ public class ChunkGenScheduler {
 
     public void decrementPopulationDepth() {
         populationDepth--;
+    }
+
+    public void setPopulatingChunk(long key) {
+        populatingChunk = key;
+    }
+
+    public void clearPopulatingChunk() {
+        populatingChunk = NOT_POPULATING;
+    }
+
+    /**
+     * True while a population runs and the given chunk is not the one being populated. Neighbors may already be on the
+     * client (chunks are sent before population), and only the populated chunk is resent afterwards.
+     */
+    public boolean isPopulatingNeighborOf(int cx, int cz) {
+        return populatingChunk != NOT_POPULATING && populatingChunk != ChunkPosUtil.toLong(cx, cz);
     }
 
     public void trackIfUnpopulated(Chunk chunk, int x, int z) {

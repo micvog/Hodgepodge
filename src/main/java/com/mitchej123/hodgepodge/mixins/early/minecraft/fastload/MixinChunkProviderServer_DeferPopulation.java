@@ -38,9 +38,11 @@ public class MixinChunkProviderServer_DeferPopulation {
             return;
         }
         scheduler.incrementPopulationDepth();
+        if (ChunkGenScheduler.hasTickingStarted()) scheduler.setPopulatingChunk(ChunkPosUtil.toLong(x, z));
         try {
             original.call(provider, x, z);
         } finally {
+            scheduler.clearPopulatingChunk();
             scheduler.decrementPopulationDepth();
         }
     }
